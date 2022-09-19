@@ -93,6 +93,11 @@ int main (int argc, char *argv[])
     exit(1);
   }
 
+  int ttl = 5;
+  if ( setsockopt(sd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) < 0 ) {
+  	perror("setting ttl to 5");
+  	exit(1);
+  }
 
   /*
    * Send a message to the multicast group specified by the

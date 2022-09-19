@@ -54,7 +54,7 @@ int main (int argc, char *argv[])
    */
   memset((char *) &localSock, 0, sizeof(localSock));
   localSock.sin_family = AF_INET;
-  localSock.sin_port = htons(5555);;
+  localSock.sin_port = htons(8395);;
   localSock.sin_addr.s_addr  = INADDR_ANY;
 
   if (bind(sd, (struct sockaddr*)&localSock, sizeof(localSock))) {
