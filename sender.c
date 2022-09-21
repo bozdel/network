@@ -8,9 +8,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <getopt.h>
 
-#define IPv4 0
-#define IPv6 1
 
 #define PORT 6000
 
@@ -22,27 +21,29 @@ void *sender(voud *arg) {
 
 }*/
 
-struct sockaddr_in init_addr(int port, char *ip) {
-	struct sockaddr_in addr;
-	memset(&addr, 0, sizeof(struct sockaddr_in));
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
+// returns inet_pton value
+int init_addr(int port, char *ip, struct sockaddr_in *addr) {
+	memset(addr, 0, sizeof(struct sockaddr_in));
+	addr->sin_family = AF_INET;
+	addr->sin_port = htons(port);
 	if (ip == NULL) {
-		addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-		printf("loopback addres is set\n");
-		return addr;
+		(addr->sin_addr).s_addr = htonl(INADDR_ANY);
+		return 1;
 	}
-	int res = inet_pton(AF_INET, ip, &(addr.sin_addr));
-	if (res == 0) {
-		printf("wrong ip\n");
+	return inet_pton(AF_INET, ip, &( (*addr).sin_addr.s_addr ));
+}
+
+
+// returns inet_pton value
+int init_addr6(int port, char *ip, struct sockaddr_in6 *addr) {
+	memset(addr, 0, sizeof(struct sockaddr_in6));
+	addr->sin6_family = AF_INET6;
+	addr->sin6_port = htons(port);
+	if (ip == NULL) {
+		addr->sin6_addr = in6addr_any;
+		return 1;
 	}
-	else if (res == -1) {
-		printf("iner_pton error\n");
-	}
-	else {
-		printf("inet_pton - ok\n");
-	}
-	return addr;
+	return inet_pton(AF_INET6, ip, &(addr->sin6_addr));
 }
 
 
@@ -53,15 +54,19 @@ int main(int argc, char *argv[]) {
 
 
 	char *group_ip = NULL;
-	int version = IPv4;
+	int domain = AF_INET;
 	int opt = 0;
 
-	while ( (opt = getopt(argc, argv, "vg:")) != -1 ) {
+	while ( (opt = getopt(argc, argv, "v:g:")) != -1 ) {
 		switch (opt) {
 			case 'v':
-				version = atoi(optarg);
+				printf("optarg: %s\n", optarg);
+				domain = atoi(optarg) == 4 ? AF_INET :
+					 	 atoi(optarg) == 6 ? AF_INET6 :
+						 atoi(optarg);
 				break;
 			case 'g':
+				printf("optarg: %s\n", optarg);
 				group_ip = optarg;
 				break;
 			default:
@@ -70,8 +75,9 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	printf("here\n");
 
-	int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	int sockfd = socket(domain, SOCK_DGRAM, 0);
 	if (sockfd == -1) {
 		printf("socket error\n");
 		return EXIT_FAILURE;
@@ -101,9 +107,29 @@ int main(int argc, char *argv[]) {
 	}*/
 
 
-
-
-	struct sockaddr_in addr = init_addr(PORT, group_ip);
+	struct sockaddr_storage addr;
+	int res;
+	if (domain == AF_INET) {
+		struct sockaddr_in addr4;
+		res = init_addr(PORT, NULL, &addr4);
+		// addr = (struct sockaddr_storage)addr4;
+		memcpy(&addr, &addr4, sizeof(addr4));
+	}
+	else if (domain == AF_INET6) {
+		struct sockaddr_in6 addr6;
+		res = init_addr6(PORT, NULL, &addr6);
+		// addr = (struct sockaddr_storage)addr6;
+		memcpy(&addr, &addr6, sizeof(addr6));
+	}
+	if (res < 1) {
+		if (res == 0) {
+			printf("wrong ip form\n");
+		}
+		else {
+			perror("inet_pton");
+		}
+		return EXIT_FAILURE;
+	}
 
 
 
@@ -120,7 +146,7 @@ int main(int argc, char *argv[]) {
 
 
 	while (true) {
-		sendto(sockfd, buff, buff_leng, 0, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
+		sendto(sockfd, buff, buff_leng, 0, (struct sockaddr*)&addr, sizeof(struct sockaddr_storage));
 		printf("sent\n");
 		sleep(1);
 	}
