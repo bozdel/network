@@ -138,7 +138,7 @@ void *sender(void *arg) {
 
 	while (true) {
 		sendto(sockfd, buff, buff_leng, 0, (struct sockaddr*)&addr, sizeof(struct sockaddr_storage));
-		printf("sent\n");
+		// printf("sent\n");
 		sleep(1);
 	}
 }
