@@ -61,7 +61,11 @@ void *recver(void *arg) {
 
 	join_group(domain, sockfd, group_ip);
 
-
+	/*FILE *tty = fopen("/dev/pts/5", "w");
+	if (tty == NULL) {
+		perror("fopen");
+		exit(EXIT_FAILURE);
+	}*/
 
 	int buff_leng = 50;
 	char *buff = (char*)calloc(buff_leng, sizeof(char));
@@ -77,6 +81,7 @@ void *recver(void *arg) {
 			perror("recvfrom error");
 			// return EXIT_FAILURE;
 		}
+		// fprintf(tty, "received (pid: %d)\n", getpid());
 		printf("received\n");
 		print_addr((struct sockaddr*)&recv_addr);
 
@@ -99,13 +104,13 @@ void *sender(void *arg) {
 	}
 	
 
-	/*struct in_addr local_addr;
+	struct in_addr local_addr;
 	local_addr.s_addr = htonl(INADDR_ANY);
 	// sizeof(multiaddr) determines which structure was passed (struct ip_mreqn or struct ip_mreq (old version) or else)
 	if ( setsockopt(sockfd, IPPROTO_IP, IP_MULTICAST_IF, &local_addr, sizeof(local_addr)) == -1 ) {
 		perror("setsockopt error");
 		// return EXIT_FAILURE;
-	}*/
+	}
 
 	/*int optval = 0;
 	if ( setsockopt(sockfd, IPPROTO_IP, IP_MULTICAST_LOOP, &optval, sizeof(int)) == -1 ) {
