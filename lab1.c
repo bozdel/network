@@ -39,6 +39,10 @@ void *recver(void *arg) {
 		perror("setsockopt: SO_REUSEADDR");
 		// return EXIT_FAILURE;
 	}
+	/*if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) == -1) {
+		perror("setsockopt: SO_REUSEPORT");
+		// return EXIT_FAILURE;
+	}*/
 
 
 	struct sockaddr_storage addr;
@@ -77,10 +81,12 @@ void *recver(void *arg) {
 	// add list to contain senders
 
 	while (true) {
+		printf("calling recvfrom\n");
 		if ( recvfrom(sockfd, buff, buff_leng, 0, (struct sockaddr*)&recv_addr, &addr_leng) == -1 ) {
 			perror("recvfrom error");
 			// return EXIT_FAILURE;
 		}
+		printf("recvfrom returned\n");
 		// fprintf(tty, "received (pid: %d)\n", getpid());
 		printf("received\n");
 		print_addr((struct sockaddr*)&recv_addr);
@@ -119,7 +125,7 @@ void *sender(void *arg) {
 	}*/
 
 	struct sockaddr_storage addr;
-	int res = init_addr(domain, PORT, NULL, &addr);
+	int res = init_addr(domain, PORT, group_ip, &addr);
 	if (res < 1) {
 		if (res == 0)
 			fprintf(stderr, "wrong ip form\n");

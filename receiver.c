@@ -85,7 +85,7 @@ int join_group(int domain, int sockfd, char *group_ip) {
 			default:
 				break;
 		}
-		// multiaddr.ipv6mr_ifindex = 0; // why it doesn't compile?
+		multiaddr.ipv6mr_interface = 0; // why it doesn't compile?
 		
 		// sizeof(multiaddr) determines which structure was passed (struct ip_mreqn or struct ip_mreq (old version))
 		if ( setsockopt(sockfd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &multiaddr, sizeof(multiaddr)) == -1) {

@@ -40,13 +40,13 @@ int init_addr(int domain, int port, char *ip, struct sockaddr_storage *addr) {
 	int res;
 	if (domain == AF_INET) {
 		struct sockaddr_in addr4;
-		res = init_addr4(PORT, NULL, &addr4);
+		res = init_addr4(PORT, ip, &addr4);
 		// addr = (struct sockaddr_storage)addr4;
 		memcpy(addr, &addr4, sizeof(addr4));
 	}
 	else if (domain == AF_INET6) {
 		struct sockaddr_in6 addr6;
-		res = init_addr6(PORT, NULL, &addr6);
+		res = init_addr6(PORT, ip, &addr6);
 		// addr = (struct sockaddr_storage)addr6;
 		memcpy(addr, &addr6, sizeof(addr6));
 	}

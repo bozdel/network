@@ -24,6 +24,15 @@ just one host and as a receiver on all the other hosts
 #define EXAMPLE_PORT 6000
 #define EXAMPLE_GROUP "239.0.0.1"
 
+void print_mem(void *buff, size_t size) {
+	unsigned char byte;
+	for (int i = 0; i < size; i++) {
+		byte = ((char*)buff)[i];
+		printf("%d ", byte);
+	}
+	printf("\n");
+}
+
 int main(int argc)
 {
    struct sockaddr_in addr;
@@ -50,6 +59,7 @@ int main(int argc)
 	 time_t t = time(0);
 	 sprintf(message, "time is %-24.24s", ctime(&t));
 	 printf("sending: %s\n", message);
+	 print_mem(&addr, sizeof(addr));
 	 cnt = sendto(sock, message, sizeof(message), 0,
 		      (struct sockaddr *) &addr, addrlen);
 	 if (cnt < 0) {
@@ -61,10 +71,16 @@ int main(int argc)
    } else {
 
       /* receive */
+   	int opttmp = 1;
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opttmp, sizeof(opttmp)) == -1) {
+		perror("setsockopt: SO_REUSEADDR");
+		return EXIT_FAILURE;
+	}
       if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {        
          perror("bind");
 	 exit(1);
       }    
+      
       mreq.imr_multiaddr.s_addr = inet_addr(EXAMPLE_GROUP);         
       mreq.imr_interface.s_addr = htonl(INADDR_ANY);         
       if (setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,

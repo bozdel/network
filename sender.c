@@ -46,7 +46,14 @@ int init_addr6(int port, char *ip, struct sockaddr_in6 *addr) {
 	return inet_pton(AF_INET6, ip, &(addr->sin6_addr));
 }
 
-
+void print_mem(void *buff, size_t size) {
+	unsigned char byte;
+	for (int i = 0; i < size; i++) {
+		byte = ((char*)buff)[i];
+		printf("%d ", byte);
+	}
+	printf("\n");
+}
 
 int main(int argc, char *argv[]) {
 
@@ -85,7 +92,8 @@ int main(int argc, char *argv[]) {
 	
 
 
-
+	if (domain == AF_INET) printf("AF_INET");
+	else if (domain == AF_INET6) printf("AF_INET6");
 
 	
 
@@ -108,16 +116,19 @@ int main(int argc, char *argv[]) {
 
 
 	struct sockaddr_storage addr;
+	memset(&addr, 0, sizeof(addr));
 	int res;
 	if (domain == AF_INET) {
 		struct sockaddr_in addr4;
-		res = init_addr(PORT, NULL, &addr4);
+		memset(&addr4, 0, sizeof(addr4));
+		res = init_addr(PORT, group_ip, &addr4);
 		// addr = (struct sockaddr_storage)addr4;
 		memcpy(&addr, &addr4, sizeof(addr4));
 	}
 	else if (domain == AF_INET6) {
 		struct sockaddr_in6 addr6;
-		res = init_addr6(PORT, NULL, &addr6);
+		memset(&addr6, 0, sizeof(addr6));
+		res = init_addr6(PORT, group_ip, &addr6);
 		// addr = (struct sockaddr_storage)addr6;
 		memcpy(&addr, &addr6, sizeof(addr6));
 	}
@@ -130,8 +141,11 @@ int main(int argc, char *argv[]) {
 		}
 		return EXIT_FAILURE;
 	}
+	/*struct sockaddr_in addr4;
+	memset(&addr4, 0, sizeof(addr4));
+	init_addr(PORT, NULL, &addr4);*/
 
-
+	print_mem(&addr, sizeof(addr));
 
 	int buff_leng = 50;
 	char *buff = (char*)calloc(buff_leng, sizeof(char));
